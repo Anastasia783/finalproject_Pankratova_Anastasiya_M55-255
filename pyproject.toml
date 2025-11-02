@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "finalproject_Pankratova_Anastasiya_M55-255"
+version = "0.1.0"
+description = "Virtual currency wallet console application"
+authors = ["Anastasiya Pankratova <pankratova@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+prettytable = "^3.9.0"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.1.6"
+
+[tool.poetry.scripts]
+project = "main:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 88
+target-version = "py38"
+
+[tool.ruff.format]
+quote-style = "double"
