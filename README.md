@@ -4,3 +4,20 @@
 ## Установка
 
 make install
+
+## Запуск 
+make project
+
+## Команды 
+register --username <name> --password <pass> - регистрация
+
+login --username <name> --password <pass> - вход
+
+show-portfolio [--base <currency>] - показать портфель
+
+buy --currency <code> --amount <sum> - купить валюту
+
+sell --currency <code> --amount <sum> - продать валюту
+
+get-rate --from <currency> --to <currency> - получить курс
+
