@@ -1,0 +1,16 @@
+[
+  {
+    "user_id": 1,
+    "username": "testuser",
+    "hashed_password": "da4b1dfbed5fec6888917b45ddfbda275a16fa57b766be5c6e43592ae3e30f99",
+    "salt": "Qi#ZiPu5",
+    "registration_date": "2025-11-02T21:51:31.281120"
+  },
+  {
+    "user_id": 2,
+    "username": "alice",
+    "hashed_password": "694527a3e5a44b89abbc1862f9d1240a5b56d65b44505029f4430fd9bd00cc74",
+    "salt": "2b35a3c42dee9a82ad23f4c64bc41c11",
+    "registration_date": "2025-11-03T15:56:35.623306"
+  }
+]

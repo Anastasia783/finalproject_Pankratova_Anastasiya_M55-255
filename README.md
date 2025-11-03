@@ -4,9 +4,12 @@
 ## Установка
 
 make install
+poetry install
+
 
 ## Запуск 
 make project
+poetry run project
 
 ## Команды 
 register --username <name> --password <pass> - регистрация

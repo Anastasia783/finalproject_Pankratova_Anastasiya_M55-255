@@ -1,26 +1,35 @@
 [tool.poetry]
-name = "finalproject_Pankratova_Anastasiya_M55-255"
+name = "finalproject-pankratova-anastasiya-m55-255"
 version = "0.1.0"
-description = "Virtual currency wallet console application"
+description = "Platform for tracking and simulating currency trading"
 authors = ["Anastasiya Pankratova <pankratova@example.com>"]
+readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.8"
 prettytable = "^3.9.0"
+toml = "^0.10.2"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.1.6"
+ruff = "^0.1.0"
 
 [tool.poetry.scripts]
 project = "main:main"
 
 [build-system]
 requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+build-backup = "poetry.core.masonry.api"
 
 [tool.ruff]
-line-length = 88
+line-length = 100
 target-version = "py38"
 
-[tool.ruff.format]
-quote-style = "double"
+[tool.valutatrade]
+data_dir = "data"
+rates_ttl_seconds = 300
+default_base_currency = "USD"
+log_dir = "logs"
+log_format = "string"
+log_level = "INFO"
+api_timeout = 30
