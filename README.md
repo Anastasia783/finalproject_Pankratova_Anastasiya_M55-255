@@ -4,11 +4,13 @@
 ## Установка
 
 poetry install
+
 make install
 
 
 ## Запуск 
 make project
+
 poetry run project
 
 ## Команды 
