@@ -1,6 +1,6 @@
 import functools
 import time
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 from valutatrade_hub.logging_config import get_logger
 
 

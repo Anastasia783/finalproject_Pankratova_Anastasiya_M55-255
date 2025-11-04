@@ -1,4 +1,5 @@
-from typing import Optional, Dict, Tuple
+
+from typing import Optional, Tuple
 from datetime import datetime, timedelta
 from valutatrade_hub.core.models import User, Portfolio, Wallet
 from valutatrade_hub.core.currencies import get_currency
@@ -179,19 +180,39 @@ class TradingService:
     def _get_cached_rate(self, from_currency: str, to_currency: str) -> Tuple[Optional[float], Optional[datetime]]:
         """Get cached exchange rate with timestamp"""
         rates = db.load_rates()
-        pair = f"{from_currency}_{to_currency}"
+        pairs = rates.get("pairs", {})
         
-        if pair in rates:
-            rate_data = rates[pair]
+        # Try direct pair
+        pair = f"{from_currency}_{to_currency}"
+        if pair in pairs:
+            rate_data = pairs[pair]
             updated_at = datetime.fromisoformat(rate_data["updated_at"])
             return rate_data.get("rate"), updated_at
         
         # Try reverse pair
         reverse_pair = f"{to_currency}_{from_currency}"
-        if reverse_pair in rates:
-            rate_data = rates[reverse_pair]
+        if reverse_pair in pairs:
+            rate_data = pairs[reverse_pair]
             updated_at = datetime.fromisoformat(rate_data["updated_at"])
             return 1 / rate_data.get("rate"), updated_at
+        
+        # Try using USD as intermediate currency
+        if from_currency != "USD" and to_currency != "USD":
+            usd_to_from = None
+            usd_to_to = None
+            
+            from_usd_pair = f"{from_currency}_USD"
+            to_usd_pair = f"{to_currency}_USD"
+            
+            if from_usd_pair in pairs:
+                usd_to_from = pairs[from_usd_pair].get("rate")
+            if to_usd_pair in pairs:
+                usd_to_to = pairs[to_usd_pair].get("rate")
+            
+            if usd_to_from and usd_to_to:
+                # Calculate cross rate: (USD/TO) / (USD/FROM) = FROM/TO
+                calculated_rate = usd_to_to / usd_to_from
+                return calculated_rate, datetime.now()
         
         return None, None
     
@@ -215,9 +236,26 @@ class TradingService:
         if rate and updated_at and self._is_rate_fresh(updated_at):
             return rate, updated_at
         
-        # Rate is stale or not found - simulate API request error
-        # In real implementation, this would call Parser Service
-        raise ApiRequestError("Rate not available in cache and Parser Service not implemented")
+        # Rate is stale or not found - try to update from Parser Service
+        try:
+            from valutatrade_hub.parser_service.updater import RatesUpdater
+            updater = RatesUpdater()
+            logger.info("Rates not found in cache, updating from Parser Service...")
+            updater.run_update()
+            
+            # Try again after update
+            rate, updated_at = self._get_cached_rate(from_currency, to_currency)
+            if rate and updated_at:
+                logger.info(f"Successfully retrieved rate after update: {rate}")
+                return rate, updated_at
+            else:
+                raise ApiRequestError(f"Rate for {from_currency}->{to_currency} not available after update")
+                
+        except ImportError:
+            # Parser Service not available
+            raise ApiRequestError("Parser Service not available")
+        except Exception as e:
+            raise ApiRequestError(f"Failed to update rates: {str(e)}")
     
     @log_action(verbose=True)
     def buy_currency(self, currency: str, amount: float) -> Tuple[bool, str]:
@@ -227,7 +265,7 @@ class TradingService:
         
         try:
             # Validate currency
-            currency_obj = get_currency(currency)
+            get_currency(currency)
             
             if amount <= 0:
                 return False, "Amount must be positive"
@@ -275,7 +313,7 @@ class TradingService:
         
         try:
             # Validate currency
-            currency_obj = get_currency(currency)
+            get_currency(currency)
             
             if amount <= 0:
                 return False, "Amount must be positive"

@@ -12,5 +12,12 @@
     "hashed_password": "694527a3e5a44b89abbc1862f9d1240a5b56d65b44505029f4430fd9bd00cc74",
     "salt": "2b35a3c42dee9a82ad23f4c64bc41c11",
     "registration_date": "2025-11-03T15:56:35.623306"
+  },
+  {
+    "user_id": 3,
+    "username": "bob",
+    "hashed_password": "0c13bc9cae0c59d6147640280cdbf90dcdbf9482d7a85a222289fdce71c31639",
+    "salt": "8fced63d1dd17c8a5ce0aef4dcb66cab",
+    "registration_date": "2025-11-04T14:54:42.952711"
   }
 ]

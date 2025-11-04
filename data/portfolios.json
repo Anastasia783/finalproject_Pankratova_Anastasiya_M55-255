@@ -8,7 +8,24 @@
     "wallets": {
       "EUR": {
         "currency_code": "EUR",
-        "balance": 100.0
+        "balance": 0.0
+      },
+      "BTC": {
+        "currency_code": "BTC",
+        "balance": 0.11
+      }
+    }
+  },
+  {
+    "user_id": 3,
+    "wallets": {
+      "EUR": {
+        "currency_code": "EUR",
+        "balance": 0.0
+      },
+      "BTC": {
+        "currency_code": "BTC",
+        "balance": 0.01
       }
     }
   }

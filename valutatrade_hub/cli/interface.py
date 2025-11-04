@@ -2,7 +2,9 @@ import argparse
 import sys
 from valutatrade_hub.core.usecases import user_manager, trading_service, portfolio_manager
 from valutatrade_hub.core.currencies import get_currency, get_all_currencies, CurrencyNotFoundError
-from valutatrade_hub.core.exceptions import InsufficientFundsError, ApiRequestError, ValutaTradeError
+from valutatrade_hub.core.exceptions import ApiRequestError, ValutaTradeError
+from valutatrade_hub.parser_service.updater import RatesUpdater
+from valutatrade_hub.parser_service.storage import RatesStorage
 from valutatrade_hub.logging_config import get_logger
 
 
@@ -13,6 +15,8 @@ def main():
     """Main CLI entry point"""
     parser = argparse.ArgumentParser(description="ValutaTrade Hub - Currency Trading Platform")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
+    
+    # ... существующие команды (register, login, logout, show-portfolio, buy, sell, get-rate, list-currencies) ...
     
     # Register command
     register_parser = subparsers.add_parser("register", help="Register new user")
@@ -49,6 +53,17 @@ def main():
     # List currencies command
     subparsers.add_parser("list-currencies", help="List all supported currencies")
     
+    # Update rates command
+    update_rates_parser = subparsers.add_parser("update-rates", help="Update exchange rates from external APIs")
+    update_rates_parser.add_argument("--source", choices=["coingecko", "exchangerate"], 
+                                   help="Update from specific source only")
+    
+    # Show rates command
+    show_rates_parser = subparsers.add_parser("show-rates", help="Show current exchange rates from cache")
+    show_rates_parser.add_argument("--currency", help="Show rates for specific currency")
+    show_rates_parser.add_argument("--top", type=int, help="Show top N currencies by rate")
+    show_rates_parser.add_argument("--base", default="USD", help="Base currency for rates")
+    
     args = parser.parse_args()
     
     if not args.command:
@@ -56,6 +71,8 @@ def main():
         return
     
     try:
+        # ... существующие команды ...
+        
         if args.command == "register":
             success, message = user_manager.register_user(args.username, args.password)
             print(message)
@@ -125,6 +142,51 @@ def main():
                     print(f"  {currency.get_display_info()}")
             else:
                 print("No currencies registered")
+        
+        # Новые команды Parser Service
+        elif args.command == "update-rates":
+            updater = RatesUpdater()
+            try:
+                rates = updater.run_update(args.source)
+                if rates:
+                    print(f"Update successful. Total rates updated: {len(rates)}")
+                else:
+                    print("Update completed but no rates were updated. Check logs for details.")
+            except Exception as e:
+                print(f"Update failed: {str(e)}")
+        
+        elif args.command == "show-rates":
+            storage = RatesStorage()
+            rates_data = storage.load_rates()
+            
+            if not rates_data.get("pairs"):
+                print("Local rates cache is empty. Run 'update-rates' to load data.")
+                return
+            
+            pairs = rates_data["pairs"]
+            last_refresh = rates_data.get("last_refresh", "Unknown")
+            
+            # Filter by currency if specified
+            if args.currency:
+                currency = args.currency.upper()
+                pairs = {k: v for k, v in pairs.items() if k.startswith(currency + "_") or k.endswith("_" + currency)}
+            
+            # Convert to list and sort
+            rates_list = [(pair, data["rate"], data["updated_at"], data["source"]) 
+                         for pair, data in pairs.items()]
+            
+            # Apply top filter
+            if args.top:
+                # Sort by rate descending and take top N
+                rates_list.sort(key=lambda x: x[1], reverse=True)
+                rates_list = rates_list[:args.top]
+            else:
+                # Sort alphabetically by pair
+                rates_list.sort(key=lambda x: x[0])
+            
+            print(f"Rates from cache (updated at {last_refresh}):")
+            for pair, rate, updated, source in rates_list:
+                print(f"- {pair}: {rate:.6f} (source: {source}, updated: {updated})")
     
     except ValutaTradeError as e:
         print(f"Error: {str(e)}")
